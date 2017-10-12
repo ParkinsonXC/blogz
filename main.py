@@ -37,6 +37,14 @@ class User(db.Model):
 #db.drop_all()
 #db.create_all()
 
+#Filter all incoming requests here:
+@app.before_request
+def require_login():
+    allowed_routes = ['login', 'signup', 'blogs', 'index']
+    if request.endpoint not in allowed_routes and 'username' not in session:
+        flash('You need to be logged in to do that', 'inform')
+        return redirect('/login')
+
 #Login handler function
 @app.route('/login', methods = ['GET', 'POST'])
 def login():
@@ -49,7 +57,7 @@ def login():
         if user and user.password == password:
             #'remember' that the user is signed in
             session['username'] = username #Session is a dictionary so that means key/value
-            flash('Logged in')
+            flash('Logged in', 'no_error')
             return redirect('/newpost')
 
         elif user and user.password != password:
@@ -142,7 +150,7 @@ def home():
 
 
 @app.route('/blog', methods = ['GET'])
-def index():
+def blogs():
     #CHECK for query param. If not present, move onto the main blog page where they are all displayed.
     blog_id = request.args.get('id')
     if blog_id:
@@ -186,6 +194,7 @@ def add_blog():
         return render_template('newpost.html',
         title_error=title_error,
         body_error=body_error)
+
 
 
 @app.route("/logout")
