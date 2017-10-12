@@ -1,19 +1,25 @@
 <!doctype html>
 <html>
     <head>
-       
-        <link href="https://fonts.googleapis.com/css?family=Archivo+Narrow" rel="stylesheet"/>
         <title>Your blog</title>
     </head>
 <body>
-    <table>
-        <tr>
-            <td><a href = "/blog"><h3>Main Blog Page</h3></a></td>
-            <td><a href = "/newpost"><h3 >Add a Blog Entry</h3></a></td>
-        </tr>
-    </table>
-
+    <div style='display:inline'>
+        <a href = '/home'>Home Page</a> | <a href = "/blog">All Posts</a> | <a href = "/newpost">Add a Blog Entry</a>
+    </div>
+    <div style='float:right'>
+        <a href='/logout'>Logout</a> | <a href='/signup'>Signup</a>
+    </div>
+    <br>
     <hr />
+
+    {% with messages = get_flashed_messages(with_categories=True) %}
+        <ul>
+        {% for category,message in messages %}
+            <li class ="{{category}}">{{message}}</li>
+        {% endfor %}
+        </ul>
+    {% endwith %}
 
     {% block content %}
     {% endblock %}

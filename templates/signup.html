@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Signup</h1>
+<p class='error'><!--jinja syntax/ flash message--></p>
+<form method='POST'>
+    <table>
+        <tbody>
+        <tr>
+            <td><label for='username'>Username</label></td>
+            <td>
+                <input name='username' type='email' value='{{email}}'>
+            </td>
+        </tr>
+        <tr>
+            <td><label for='password'>Password</label></td>
+            <td>
+                <input name='password' type='password'/>
+            </td>
+        </tr>
+        <tr>
+            <td><label for='verify'>Verify password</label></td>
+            <td>
+                <input name='verify' type='password'/>
+            </td>
+        </tbody>
+    </table>
+    <input type='submit' value='Log in'>
+</form>
+{% endblock %}

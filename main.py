@@ -1,9 +1,9 @@
-from flask import Flask, request, redirect, render_template
+from flask import Flask, request, redirect, render_template, session, flash
 from flask_sqlalchemy import SQLAlchemy 
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://build-a-blog:build-a-blog@localhost:3306/build-a-blog'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://blogz:blogz@localhost:3306/blogz'
 app.config['SQLALCHEMY_ECHO'] = True
 #The database
 db = SQLAlchemy(app)
@@ -12,13 +12,65 @@ class Blog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(120))
     body = db.Column(db.String(250))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
-    def __init__(self, title, body):
+
+    def __init__(self, title, body, author):
         self.title = title
         self.body = body
+        self.author = author
+
+#Create user cass
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(120), unique=True)
+    password = db.Column(db.String(120))
+    blogs = db.relationship('Blog', backref='author')
+
+    def __init__(self, email, password):
+        self.email = email
+        self.password = password
 
 
 #AFTER we have created the above items, we need to use a python shell to initalize our database.
+#db.drop_all()
+#db.create_all()
+
+#Login handler function
+@app.route('/login', methods = ['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        user = User.query.filter_by(username=username)
+        #if 'user' exists and their password matches what we have on file.....
+        if user and user.password == password:
+            #'remember' that the user is signed in
+            session['username'] = username #Session is a dictionary so that means key/value
+            flash('Logged in')
+            return redirect('/newpost')
+
+        elif user and user.password != password:
+            flash('Password is incorrect', 'error')
+        
+        elif not user:
+            flash('User does not exist', 'error')
+
+    else:
+        return render_template('login.html')
+
+
+#Signup handler function
+@app.route('/signup', methods = ['GET', 'POST'])
+def signup():
+    return render_template('signup.html')
+
+
+#'Home' handler. Should post views of all the authors
+@app.route('/home', methods = ['GET'])
+def home():
+    pass
+
 
 @app.route('/blog', methods = ['GET'])
 def index():
@@ -33,7 +85,7 @@ def index():
         return render_template('blogs.html', blogs=blogs)
 
 
-@app.route('/newpost')
+@app.route('/newpost', methods = ['GET'])
 def display_newpost_form():
     return render_template('newpost.html')
 
@@ -41,6 +93,7 @@ def display_newpost_form():
 def add_blog():
     blog_title = request.form['title']
     blog_body = request.form['blog-body']
+    #BLOG AUTHOR? THIRD PARAMETER HERE
     #SET CONDITIONALS TO CHECK IF EITHER THE TITLE OR THE POST IS LEFT EMPTY
 
     title_error = ""
@@ -59,12 +112,17 @@ def add_blog():
         db.session.add(new_post)
         db.session.commit()
         return redirect('/blog?id={}'.format(new_post.id))
-        
-        
+               
     else:
         return render_template('newpost.html',
         title_error=title_error,
         body_error=body_error)
+
+
+#@app.route("/logout", methods=['POST'])
+#def logout():
+#    del session['user'] #May have to change this later. 
+#    return redirect('/blog')
 
 
 if __name__ == "__main__":
