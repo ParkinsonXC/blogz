@@ -40,7 +40,7 @@ class User(db.Model):
 #Filter all incoming requests here:
 @app.before_request
 def require_login():
-    allowed_routes = ['login', 'signup', 'blogs', 'index']
+    allowed_routes = ['login', 'signup', 'list_blogs', 'index']
     if request.endpoint not in allowed_routes and 'username' not in session:
         flash('You need to be logged in to do that', 'inform')
         return redirect('/login')
@@ -150,7 +150,7 @@ def home():
 
 
 @app.route('/blog', methods = ['GET'])
-def blogs():
+def list_blogs():
     #CHECK for query param. If not present, move onto the main blog page where they are all displayed.
     blog_id = request.args.get('id')
     if blog_id:
@@ -168,6 +168,9 @@ def display_newpost_form():
 
 @app.route('/newpost', methods = ['POST'])
 def add_blog():
+    #Grab specific owner to add this blog post to...
+    author = User.query.filter_by(username=session['username']).first()
+
     blog_title = request.form['title']
     blog_body = request.form['blog-body']
     #BLOG AUTHOR? THIRD PARAMETER HERE
@@ -185,7 +188,7 @@ def add_blog():
     #If not, we are good to go. Initialize the new post into the class/database, add it, then commit it.
     #After it has been committed, it will have an ID. Use that to redirect to the post itself.
     if not title_error and not body_error:
-        new_post = Blog(blog_title, blog_body)
+        new_post = Blog(blog_title, blog_body, author)
         db.session.add(new_post)
         db.session.commit()
         return redirect('/blog?id={}'.format(new_post.id))
