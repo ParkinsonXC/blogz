@@ -7,6 +7,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://blogz:blogz@localhost:3
 app.config['SQLALCHEMY_ECHO'] = True
 #The database
 db = SQLAlchemy(app)
+app.secret_key = 'y337kGcys&zP3B'
 
 class Blog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -42,7 +43,9 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        user = User.query.filter_by(username=username)
+        user = User.query.filter_by(username=username).first()
+
+
         #if 'user' exists and their password matches what we have on file.....
         if user and user.password == password:
             #'remember' that the user is signed in
@@ -52,9 +55,11 @@ def login():
 
         elif user and user.password != password:
             flash('Password is incorrect', 'error')
+            return redirect('/login')
         
         elif not user:
             flash('User does not exist', 'error')
+            return redirect('/login')
 
     else:
         return render_template('login.html')
@@ -126,7 +131,6 @@ def signup():
             verify_error=verify_error,
             duplicate_user_error=duplicate_user_error)
 
-        
 
 
     return render_template('signup.html')
@@ -185,10 +189,10 @@ def add_blog():
         body_error=body_error)
 
 
-#@app.route("/logout", methods=['POST'])
-#def logout():
-#    del session['user'] #May have to change this later. 
-#    return redirect('/blog')
+@app.route("/logout")
+def logout():
+    del session['username'] #May have to change this later. 
+    return redirect('/blog')
 
 
 if __name__ == "__main__":
