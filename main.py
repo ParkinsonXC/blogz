@@ -27,8 +27,8 @@ class User(db.Model):
     password = db.Column(db.String(120))
     blogs = db.relationship('Blog', backref='author')
 
-    def __init__(self, email, password):
-        self.email = email
+    def __init__(self, username, password):
+        self.username = username
         self.password = password
 
 
@@ -63,6 +63,72 @@ def login():
 #Signup handler function
 @app.route('/signup', methods = ['GET', 'POST'])
 def signup():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        verify = request.form['verify']
+
+        username_error = ''
+        password_error = ''
+        verify_error = ''
+        duplicate_user_error = ''
+
+        #USERNAME CHECK
+        if len(username) <= 3:
+            username == ''
+            username_error = "Username too short."
+
+        elif len(username) > 20:
+            username == ''
+            username_error = "Username too long."
+        
+        elif ' ' in username:
+            username == ''
+            username_error = "Username cannot have a space."
+
+        #PASSWORD CHECK
+        if len(password) <= 3:
+            #password = ''
+            #verify = ''
+            password_error = 'This password is too short.'
+        
+        elif len(password) > 20:
+            #password = ''
+            #verify = ''
+            password_error = 'This password is too long'
+        
+        elif ' ' in password:
+            password_error = 'Your password cannot have a space'
+
+        #VERIFY CHECK
+        if password != verify:
+            verify_error = 'Your passwords do not match'
+
+        #EXISTING USER CHECK
+        existing_user = User.query.filter_by(username=username).first()
+        if existing_user:
+            duplicate_user_error = 'This user already exists.'
+        
+        #SHOULD NO ERROR OCCUR:
+        if not username_error and not password_error and not verify_error and not existing_user:
+            new_user = User(username, password)
+            db.session.add(new_user)
+            db.session.commit()
+            session['username'] = username
+            return redirect('/newpost')
+        
+        #IF AN ERROR DOES OCCUR....
+        else:
+            return render_template('signup.html',
+            username=username,
+            username_error=username_error,
+            password_error=password_error,
+            verify_error=verify_error,
+            duplicate_user_error=duplicate_user_error)
+
+        
+
+
     return render_template('signup.html')
 
 
