@@ -45,7 +45,6 @@ def login():
         password = request.form['password']
         user = User.query.filter_by(username=username).first()
 
-
         #if 'user' exists and their password matches what we have on file.....
         if user and user.password == password:
             #'remember' that the user is signed in
