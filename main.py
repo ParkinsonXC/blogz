@@ -1,5 +1,7 @@
 from flask import Flask, request, redirect, render_template, session, flash
-from flask_sqlalchemy import SQLAlchemy 
+from flask_sqlalchemy import SQLAlchemy
+
+
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
@@ -75,6 +77,10 @@ def login():
 #Signup handler function
 @app.route('/signup', methods = ['GET', 'POST'])
 def signup():
+    if session:
+        flash('You are already logged in', 'no_error')
+        return redirect('/blog')
+
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -158,15 +164,17 @@ def list_blogs():
 
     if blog_id: #Displays a single post by a user
         blog = Blog.query.get(blog_id)
-        return render_template('displaypost.html', blog=blog)
+        users = User.query.all()
+        return render_template('displaypost.html', blog=blog, users=users)
 
     elif user_id: #Displays all posts by a given user
         user = User.query.get(user_id)
         user_blogs = Blog.query.filter_by(user_id = user.id).all()
-        return render_template('singleUser.html', blogs=user_blogs)
+        return render_template('singleUser.html', blogs=user_blogs, user=user)
 
     else:
-        blogs = Blog.query.all() 
+        blogs = Blog.query.all()
+        # ordered = Blog.query.order_by(id = blogs.id)
         users = User.query.all()
         return render_template('blogs.html', blogs=blogs, users=users)
 
@@ -211,7 +219,7 @@ def add_blog():
 
 @app.route("/logout")
 def logout():
-    del session['username'] #May have to change this later. 
+    del session['username'] 
     return redirect('/blog')
 
 

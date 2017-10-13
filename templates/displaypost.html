@@ -3,6 +3,12 @@
 {% block content %}
 <h1 class='single' style="text-align:center">{{blog.title}}</h1>
 <p>{{blog.body}}</p>
+{% for user in users %}
+    {% if user.id == blog.user_id %}
+        <p class='written-by'>Written by <a href='/blog?user={{user.id}}'>{{user.username}}</a></p>
+    {% endif %}    
+
+{% endfor %}
 
 
 

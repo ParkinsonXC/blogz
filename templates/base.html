@@ -23,7 +23,12 @@
         <a href = '/'>Home Page</a> | <a href = "/blog">All Posts</a> | <a href = "/newpost">Add a Post</a>
     </div>
     <div style='float:right'>
-        <a href='/logout'>Logout</a> | <a href='/signup'>Signup</a>
+        {% if session %}
+        <a href='/logout'>Logout</a>
+        {% else %}
+        <a href='/login'>Login</a>
+        {% endif %}
+        | <a href='/signup'>Signup</a>
     </div>
     <br>
     <hr />
