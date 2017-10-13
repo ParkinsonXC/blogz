@@ -12,9 +12,17 @@
 {% for blog in blogs %}
 <a href="/blog?id={{blog.id}}"><h2><i>{{blog.title}}</i></h2></a>
 <p>{{blog.body}}</p>
+{% for user in users %}
+    {% if user.id == blog.user_id %}
+        <p class='written-by'>Written by <a href='/blog?user={{user.id}}'>{{user.username}}</a></p>
+    {% endif %}    
+
+{% endfor %}
 <hr />
 {% endfor %}
+
 {% endif %}
+
 
 
 

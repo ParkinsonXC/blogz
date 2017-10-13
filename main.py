@@ -42,7 +42,7 @@ class User(db.Model):
 def require_login():
     allowed_routes = ['login', 'signup', 'list_blogs', 'index']
     if request.endpoint not in allowed_routes and 'username' not in session:
-        flash('You need to be logged in to do that', 'inform')
+        flash('You need to be logged in to do that', 'error')
         return redirect('/login')
 
 #Login handler function
@@ -88,21 +88,21 @@ def signup():
         #USERNAME CHECK
         if len(username) <= 3:
             username == ''
-            username_error = "Username too short."
+            username_error = "Username too short"
 
         elif len(username) > 20:
             username == ''
-            username_error = "Username too long."
+            username_error = "Username too long"
         
         elif ' ' in username:
             username == ''
-            username_error = "Username cannot have a space."
+            username_error = "Username cannot have a space"
 
         #PASSWORD CHECK
         if len(password) <= 3:
             #password = ''
             #verify = ''
-            password_error = 'This password is too short.'
+            password_error = 'This password is too short'
         
         elif len(password) > 20:
             #password = ''
@@ -119,7 +119,7 @@ def signup():
         #EXISTING USER CHECK
         existing_user = User.query.filter_by(username=username).first()
         if existing_user:
-            duplicate_user_error = 'This user already exists.'
+            duplicate_user_error = 'This user already exists'
         
         #SHOULD NO ERROR OCCUR:
         if not username_error and not password_error and not verify_error and not existing_user:
@@ -144,22 +144,31 @@ def signup():
 
 
 #'Home' handler. Should post views of all the authors
-@app.route('/home', methods = ['GET'])
-def home():
-    pass
+@app.route('/', methods = ['GET'])
+def index():
+    users = User.query.all()
+    return render_template('index.html', users=users)
 
 
 @app.route('/blog', methods = ['GET'])
 def list_blogs():
     #CHECK for query param. If not present, move onto the main blog page where they are all displayed.
     blog_id = request.args.get('id')
-    if blog_id:
+    user_id = request.args.get('user')
+
+    if blog_id: #Displays a single post by a user
         blog = Blog.query.get(blog_id)
         return render_template('displaypost.html', blog=blog)
 
+    elif user_id: #Displays all posts by a given user
+        user = User.query.get(user_id)
+        user_blogs = Blog.query.filter_by(user_id = user.id).all()
+        return render_template('singleUser.html', blogs=user_blogs)
+
     else:
-        blogs = Blog.query.all() #TRY A FILTER_BY HERE to change the order the blogs appear in
-        return render_template('blogs.html', blogs=blogs)
+        blogs = Blog.query.all() 
+        users = User.query.all()
+        return render_template('blogs.html', blogs=blogs, users=users)
 
 
 @app.route('/newpost', methods = ['GET'])
