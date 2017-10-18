@@ -1,6 +1,7 @@
 <!doctype html>
 <html>
     <head>
+       <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/main.css') }}">
         <style>
             .error {
                 color:red
@@ -23,7 +24,7 @@
         <a href = '/'>Home Page</a> | <a href = "/blog">All Posts</a> | <a href = "/newpost">Add a Post</a>
     </div>
     <div style='float:right'>
-        {% if session %}
+        {% if session|length > 0 %}
         <a href='/logout'>Logout</a>
         {% else %}
         <a href='/login'>Login</a>

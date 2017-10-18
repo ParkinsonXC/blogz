@@ -1,5 +1,7 @@
 from flask import Flask, request, redirect, render_template, session, flash
 from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
+from sqlalchemy import desc
 
 
 
@@ -16,12 +18,16 @@ class Blog(db.Model):
     title = db.Column(db.String(120))
     body = db.Column(db.String(250))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    pub_date = db.Column(db.DateTime) #########
 
 
-    def __init__(self, title, body, author):
+    def __init__(self, title, body, author, pub_date=None):
         self.title = title
         self.body = body
         self.author = author
+        if pub_date is None:############
+            pub_date = datetime.utcnow()
+        self.pub_date = pub_date ##########
 
 #Create user cass
 class User(db.Model):
@@ -44,7 +50,7 @@ class User(db.Model):
 def require_login():
     allowed_routes = ['login', 'signup', 'list_blogs', 'index']
     if request.endpoint not in allowed_routes and 'username' not in session:
-        flash('You need to be logged in to do that', 'error')
+        #flash('You need to be logged in to do that', 'error')
         return redirect('/login')
 
 #Login handler function
@@ -173,8 +179,7 @@ def list_blogs():
         return render_template('singleUser.html', blogs=user_blogs, user=user)
 
     else:
-        blogs = Blog.query.all()
-        # ordered = Blog.query.order_by(id = blogs.id)
+        blogs = Blog.query.order_by(desc(Blog.pub_date)).all()
         users = User.query.all()
         return render_template('blogs.html', blogs=blogs, users=users)
 
@@ -220,6 +225,7 @@ def add_blog():
 @app.route("/logout")
 def logout():
     del session['username'] 
+    #flash('Logged out', 'no_error') This doesn't work, not sure why.
     return redirect('/blog')
 
 
