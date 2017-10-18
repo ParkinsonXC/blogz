@@ -2,6 +2,7 @@ from flask import Flask, request, redirect, render_template, session, flash
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from sqlalchemy import desc
+from hashutils import make_pw_hash, check_pw_hash
 
 
 
@@ -33,12 +34,12 @@ class Blog(db.Model):
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(120), unique=True)
-    password = db.Column(db.String(120))
+    pw_hash = db.Column(db.String(120))
     blogs = db.relationship('Blog', backref='author')
 
     def __init__(self, username, password):
         self.username = username
-        self.password = password
+        self.pw_hash = make_pw_hash(password)
 
 
 #AFTER we have created the above items, we need to use a python shell to initalize our database.
@@ -62,7 +63,7 @@ def login():
         user = User.query.filter_by(username=username).first()
 
         #if 'user' exists and their password matches what we have on file.....
-        if user and user.password == password:
+        if user and check_pw_hash(password, user.pw_hash):
             #'remember' that the user is signed in
             session['username'] = username #Session is a dictionary so that means key/value
             flash('Logged in', 'no_error')
