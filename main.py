@@ -19,16 +19,17 @@ class Blog(db.Model):
     title = db.Column(db.String(120))
     body = db.Column(db.String(250))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    pub_date = db.Column(db.DateTime) #########
+    pub_date = db.Column(db.DateTime)
 
 
     def __init__(self, title, body, author, pub_date=None):
         self.title = title
         self.body = body
         self.author = author
-        if pub_date is None:############
-            pub_date = datetime.utcnow()
-        self.pub_date = pub_date ##########
+        if pub_date is None:
+            # pub_date = datetime.utcnow()
+            pub_date = datetime.now()
+        self.pub_date = pub_date
 
 #Create user cass
 class User(db.Model):
@@ -159,8 +160,15 @@ def signup():
 #'Home' handler. Should post views of all the authors
 @app.route('/', methods = ['GET'])
 def index():
-    users = User.query.all()
-    return render_template('index.html', users=users)
+    users = User.query.order_by(User.username)
+    blogs = Blog.query.order_by(desc(Blog.pub_date)).all()
+    last_active = {}
+    for user in users:
+        for blog in blogs:
+            if user.id == blog.user_id:
+                last_active[user.id] = blog.pub_date
+                break
+    return render_template('index.html', users=users, last_active=last_active)
 
 
 @app.route('/blog', methods = ['GET'])
